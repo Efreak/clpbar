@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -x
+
+dd if=/dev/zero bs=1024 count=1024 \
+| ./bar \
+		-s 1024k \
+		--throttle 50k \
+		-of /dev/null \
+		--info-file infofile \
+		#
+
+# vim:ts=2:shiftwidth=2:filetype=sh:syntax=sh:

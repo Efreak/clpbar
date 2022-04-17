@@ -1,0 +1,37 @@
+Hello world!
+
+This is an information file used by bar to print useful stuff while your data
+is copied.  This line should be the last line shown for now.
+
+@@@
+
+Hello again!
+
+this is yet another entry in the info file.
+
+@@@
+
+If you want to create your own information file, simply pass
+
+  --info-file <filename>
+
+to bar on the command line.  Inside your information file, have a few little
+tidbits of information separated by lines that contain only three '@'
+characters.  (The "@@@" string, on a line by itself, with no leading or
+trailing characters, is a delimiter that bar looks for when printing
+information.  It tells bar that the end of the current tidbit of information
+has been reached, and the text that follows is the begining of the next
+information tidbit.)
+
+@@@
+
+And that's it!
+
+Well, not quite.  Since now bar needs to know the height of the terminal we
+well as the width, there are some height-specific command line and rc-file
+options that have been added.  In addition to -sw and --screen-width, there
+are now corresponding -sh and --screen-height command line and rc-file
+options.
+
+...And now that's it.  Enjoy the rest of your day.
+
