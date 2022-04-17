@@ -486,8 +486,10 @@ config.status:917: creating Makefile
 config.status:917: creating bar.1
 config.status:917: creating doxygen.conf
 config.status:917: creating config.h
+config.status:1098: config.h is unchanged
 config.status:1146: executing depfiles commands
 config.status:1221: cd .       && sed -e '/# am--include-marker/d' Makefile         | make -f - am--depfiles
+make: Nothing to be done for 'am--depfiles'.
 config.status:1228: $? = 0
 config.status:1146: executing test-script-preparation commands
 configure:7954: 
