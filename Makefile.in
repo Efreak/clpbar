@@ -421,7 +421,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/bar.1.in \
 	$(srcdir)/config.h.in $(srcdir)/doxygen.conf.in \
 	$(srcdir)/sourceforge.mk AUTHORS COPYING ChangeLog INSTALL \
 	NEWS README TODO compile config.guess config.sub depcomp \
-	install-sh missing mkinstalldirs test-driver
+	install-sh ltmain.sh missing mkinstalldirs test-driver
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
