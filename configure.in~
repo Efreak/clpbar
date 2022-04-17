@@ -1,23 +1,14 @@
-AC_INIT
-AC_CONFIG_SRCDIR([bar.c])
-AC_CANONICAL_TARGET
+AC_INIT(bar.c)
+AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE(bar,1.11.1)
-AC_CONFIG_HEADERS([config.h])
+AM_CONFIG_HEADER(config.h)
 
 AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_AWK
 
-m4_warn([obsolete],
-[The preprocessor macro `STDC_HEADERS' is obsolete.
-  Except in unusual embedded environments, you can safely include all
-  ISO C90 headers unconditionally.])dnl
-# Autoupdate added the next two lines to ensure that your configure
-# script's behavior did not change.  They are probably safe to remove.
-AC_CHECK_INCLUDES_DEFAULT
-AC_PROG_EGREP
-
+AC_HEADER_STDC
 AC_CHECK_HEADERS([ \
 	assert.h \
 	ctype.h \
@@ -47,20 +38,7 @@ AC_CHECK_FUNCS([ \
 	sprintf \
 	])
 AC_FUNC_MALLOC
-m4_warn([obsolete],
-[Update your code to rely only on HAVE_SYS_TIME_H,
-then remove this warning and the obsolete code below it.
-All current systems provide time.h; it need not be checked for.
-Not all systems provide sys/time.h, but those that do, all allow
-you to include it and time.h simultaneously.])dnl
-AC_CHECK_HEADERS_ONCE([sys/time.h])
-# Obsolete code to be removed.
-if test $ac_cv_header_sys_time_h = yes; then
-  AC_DEFINE([TIME_WITH_SYS_TIME],[1],[Define to 1 if you can safely include both <sys/time.h>
-	     and <time.h>.  This macro is obsolete.])
-fi
-# End of obsolete code.
-
+AC_HEADER_TIME
 
 dnl
 dnl The following tests for Large File support reverse-engineered from 
@@ -70,39 +48,47 @@ AC_MSG_CHECKING([if filesystem supports Large Files natively])
 if test "${ac_cv_c_native_large_file_support+set}" = set; then
 	AC_MSG_RESULT([(cached)] $ac_cv_c_native_large_file_support)
 else
-	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+	AC_TRY_COMPILE(
+		[
 #include <sys/types.h>
 #define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
-		
-]], [[
+		]
+,
+		[
   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
 		       && LARGE_OFF_T % 2147483647 == 1)
 		      ? 1 : -1];
-		
-]])],[ac_cv_c_native_large_file_support=yes
-],[ac_cv_c_native_large_file_support=no
-	])
+		]
+,
+		ac_cv_c_native_large_file_support=yes
+,
+		ac_cv_c_native_large_file_support=no
+	)
 	AC_MSG_RESULT($ac_cv_c_native_large_file_support)
 fi
 
 if test $ac_cv_c_native_large_file_support = no; then
 	AC_MSG_CHECKING([if _FILE_OFFSET_BITS needed for Large Files])
-	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+	AC_TRY_COMPILE(
+		[
 #define _FILE_OFFSET_BITS 64
 #include <sys/types.h>
 #define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
-		
-		]], [[
+		]
+		,
+		[
   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
 		       && LARGE_OFF_T % 2147483647 == 1)
 		      ? 1 : -1];
-		
-		]])],[ac_cv_c_need_file_offset_bits=yes
-		AC_DEFINE(_FILE_OFFSET_BITS,64,Define if OS needs it for Large Files)
-		AC_MSG_RESULT(yes)
-		],[ac_cv_c_need_file_offset_bits=no
-		AC_MSG_RESULT(no)
-	])
+		]
+		,
+		ac_cv_c_need_file_offset_bits=yes
+		AC_DEFINE(_FILE_OFFSET_BITS,64,[Define if OS needs it for Large Files])
+		AC_MSG_RESULT([yes])
+		,
+		ac_cv_c_need_file_offset_bits=no
+		AC_MSG_RESULT([no])
+	)
 fi
 
 if test $ac_cv_c_native_large_file_support = no; then
@@ -111,22 +97,26 @@ if test $ac_cv_c_native_large_file_support = no; then
 		ac_cv_c_need_large_files=no
 		AC_MSG_RESULT([no])
 	else
-		AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+		AC_TRY_COMPILE(
+			[
 #define _LARGE_FILES 1
 #include <sys/types.h>
 #define LARGE_OFF_T (((off_t) 1 << 62) - 1 + ((off_t) 1 << 62))
-			
-			]], [[
+			]
+			,
+			[
   int off_t_is_large[(LARGE_OFF_T % 2147483629 == 721
 		       && LARGE_OFF_T % 2147483647 == 1)
 		      ? 1 : -1];
-			
-			]])],[ac_cv_c_need_large_files=yes
-			AC_DEFINE(_LARGE_FILES,1,Define if OS needs it for Large Files)
-			AC_MSG_RESULT(yes)
-			],[ac_cv_c_need_large_files=no
-			AC_MSG_RESULT(no)
-		])
+			]
+			,
+			ac_cv_c_need_large_files=yes
+			AC_DEFINE(_LARGE_FILES,1,[Define if OS needs it for Large Files])
+			AC_MSG_RESULT([yes])
+			,
+			ac_cv_c_need_large_files=no
+			AC_MSG_RESULT([no])
+		)
 	fi
 fi
 
@@ -137,19 +127,23 @@ AC_MSG_CHECKING([for vectored I/O support])
 if test "${ac_cv_have_struct_iovec+set}" = set; then
 	AC_MSG_RESULT([(cached)] $ac_cv_have_struct_iovec)
 else
-	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+	AC_TRY_COMPILE(
+		[
 #ifdef HAVE_SYS_UIO_H
 #include <sys/uio.h>
 #endif
-		]], [[
+		],
+		[
 	struct iovec vec[2];
 
 	vec[0].iov_base = 0;
 	vec[0].iov_len = 0;
-		]])],[ac_cv_have_struct_iovec=yes
-		AC_DEFINE(HAVE_STRUCT_IOVEC,1,Define if struct iovec found)
-		],[ac_cv_have_struct_iovec=no
-	])
+		],
+		[ac_cv_have_struct_iovec=yes]
+		AC_DEFINE(HAVE_STRUCT_IOVEC,1,[Define if struct iovec found])
+		,
+		[ac_cv_have_struct_iovec=no]
+	)
 	AC_MSG_RESULT($ac_cv_have_struct_iovec)
 fi
 
@@ -168,28 +162,36 @@ case "$target" in
 esac
 AC_ARG_ENABLE(
 	sw-1,
-	AS_HELP_STRING([--enable-sw-1],[Assume screen width - 1
-		]),
+	AC_HELP_STRING(
+		[--enable-sw-1],
+		[Assume screen width - 1]
+		),
 	[ac_cv_default_sw_minus_one=1],
 	[ac_cv_default_sw_minus_one=0]
 	)
 AC_ARG_ENABLE(
 	sw-0,
-	AS_HELP_STRING([--enable-sw-0],[Assume full screen width
-		]),
+	AC_HELP_STRING(
+		[--enable-sw-0],
+		[Assume full screen width]
+		),
 	[ac_cv_default_sw_minus_one=0],
 	)
 AC_ARG_ENABLE(
 	sh-1,
-	AS_HELP_STRING([--enable-sh-1],[Assume screen height - 1
-		]),
+	AC_HELP_STRING(
+		[--enable-sh-1],
+		[Assume screen height - 1]
+		),
 	[ac_cv_default_sh_minus_one=1],
 	[ac_cv_default_sh_minus_one=0]
 	)
 AC_ARG_ENABLE(
 	sh-0,
-	AS_HELP_STRING([--enable-sh-0],[Assume full screen height
-		]),
+	AC_HELP_STRING(
+		[--enable-sh-0],
+		[Assume full screen height]
+		),
 	[ac_cv_default_sh_minus_one=0],
 	)
 AC_CACHE_CHECK(
@@ -217,8 +219,10 @@ AC_SUBST(DEFAULT_SH_MINUS_ONE)
 
 AC_ARG_ENABLE(
 	[display-twiddle],
-	AS_HELP_STRING([--enable-display-twiddle],[Enable twiddle display by default
-		]),
+	AC_HELP_STRING(
+		[--enable-display-twiddle],
+		[Enable twiddle display by default]
+		),
 	[ac_cv_default_display_twiddle=1],
 	[ac_cv_default_display_twiddle=0]
 	)
@@ -236,8 +240,9 @@ AC_SUBST(DEFAULT_DISPLAY_TWIDDLE)
 
 AC_ARG_WITH(
 	[buffer-size],
-	AS_HELP_STRING([--with-buffer-size=SIZE],[Default buffer size = SIZE bytes (default: 52488 (or 512KB))
-		]),
+	AC_HELP_STRING([--with-buffer-size=SIZE],
+		[Default buffer size = SIZE bytes (default: 52488 (or 512KB))]
+		),
 	[ac_cv_default_buffer_size=$withval],
 	[ac_cv_default_buffer_size=52488]
 	)
@@ -258,7 +263,8 @@ if test "${ac_cv_func_sysconf}" = "yes"; then
 	if test "${ac_cv_sysconf_works+set}" = set; then
 		AC_MSG_RESULT([(cached)] $ac_cv_sysconf_works)
 	else
-		AC_RUN_IFELSE([AC_LANG_SOURCE([[
+		AC_TRY_RUN(
+			[
 #include <unistd.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -292,10 +298,12 @@ int main(int argc, char *argv[])
 	assert(page_size % sizeof(void *) == 0);
 	return(0);
 }
-			
-			]])],[ac_cv_sysconf_works="yes"
-			],[ac_cv_sysconf_works="no"
-		],[])
+			]
+			,
+			ac_cv_sysconf_works="yes"
+			,
+			ac_cv_sysconf_works="no"
+		)
 		AC_MSG_RESULT($ac_cv_sysconf_works)
 	fi
 fi
@@ -304,8 +312,9 @@ if test "${ac_cv_sysconf_works}" = "yes"; then
 fi
 AC_ARG_WITH(
 	[page-size],
-	AS_HELP_STRING([--with-page-size=SIZE],[Default page size = SIZE bytes (default: as reported by sysconf, or 8192 (or 8KB))
-		]),
+	AC_HELP_STRING([--with-page-size=SIZE],
+		[Default page size = SIZE bytes (default: as reported by sysconf, or 8192 (or 8KB))]
+		),
 	[ac_cv_default_page_size=$withval],
 	)
 if test "${ac_cv_default_page_size+set}" != set; then
@@ -325,8 +334,10 @@ AC_SUBST(DEFAULT_PAGE_SIZE)
 
 AC_ARG_ENABLE(
 	[use-memalign],
-	AS_HELP_STRING([--disable-use-memalign],[Disable aligned memory allocation (save memory, less than 1% performance decrease) (default: enabled)
-		]),
+	AC_HELP_STRING(
+		[--disable-use-memalign],
+		[Disable aligned memory allocation (save memory, less than 1% performance decrease) (default: enabled)]
+		),
 	[ac_cv_use_memalign=$enableval],
 	[ac_cv_use_memalign="yes"]
 	)
@@ -343,7 +354,8 @@ if test "${ac_cv_use_memalign}" = "yes"; then
 		if test "${ac_cv_posix_memalign_works+set}" = set; then
 			AC_MSG_RESULT([(cached)] $ac_cv_posix_memalign_works)
 		else
-			AC_RUN_IFELSE([AC_LANG_SOURCE([[
+			AC_TRY_RUN(
+				[
 #include <unistd.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -392,10 +404,12 @@ int main(int argc, char *argv[])
 	free(ptr);
 	return(0);
 }
-				
-]])],[ac_cv_posix_memalign_works=yes
-],[ac_cv_posix_memalign_works=no
-			],[])
+				]
+,
+				ac_cv_posix_memalign_works=yes
+,
+				ac_cv_posix_memalign_works=no
+			)
 			AC_MSG_RESULT($ac_cv_posix_memalign_works)
 		fi
 
@@ -404,7 +418,8 @@ int main(int argc, char *argv[])
 			if test "${ac_cv_posix_memalign_gnu_source+set}" = set; then
 				AC_MSG_RESULT([(cached)] $ac_cv_posix_memalign_gnu_source)
 			else
-				AC_RUN_IFELSE([AC_LANG_SOURCE([[
+				AC_TRY_RUN(
+					[
 #include <unistd.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -455,14 +470,16 @@ int main(int argc, char *argv[])
 	free(ptr);
 	return(0);
 }
-					
-]])],[ac_cv_posix_memalign_gnu_source=yes
+					]
+,
+					ac_cv_posix_memalign_gnu_source=yes
 					ac_cv_posix_memalign_works=yes
-					AC_DEFINE(_GNU_SOURCE,1,Define if posix_memalign needs _GNU_SOURCE)
-					AC_MSG_RESULT(yes)
-],[ac_cv_posix_memalign_gnu_source=no
-					AC_MSG_RESULT(no)
-				],[])
+					AC_DEFINE(_GNU_SOURCE,1,[Define if posix_memalign needs _GNU_SOURCE])
+					AC_MSG_RESULT([yes])
+,
+					ac_cv_posix_memalign_gnu_source=no
+					AC_MSG_RESULT([no])
+				)
 			fi
 		fi
 
@@ -471,7 +488,8 @@ int main(int argc, char *argv[])
 			if test "${ac_cv_posix_memalign_xopen_source+set}" = set; then
 				AC_MSG_RESULT([(cached)] $ac_cv_posix_memalign_xopen_source)
 			else
-				AC_RUN_IFELSE([AC_LANG_SOURCE([[
+				AC_TRY_RUN(
+					[
 #include <unistd.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -522,14 +540,16 @@ int main(int argc, char *argv[])
 	free(ptr);
 	return(0);
 }
-					
-]])],[ac_cv_posix_memalign_xopen_source=yes
+					]
+,
+					ac_cv_posix_memalign_xopen_source=yes
 					ac_cv_posix_memalign_works=yes
-					AC_DEFINE(_XOPEN_SOURCE,600,Define if posix_memalign needs _XOPEN_SOURCE >= 600)
-					AC_MSG_RESULT(yes)
-],[ac_cv_posix_memalign_xopen_source=no
-					AC_MSG_RESULT(no)
-				],[])
+					AC_DEFINE(_XOPEN_SOURCE,600,[Define if posix_memalign needs _XOPEN_SOURCE >= 600])
+					AC_MSG_RESULT([yes])
+,
+					ac_cv_posix_memalign_xopen_source=no
+					AC_MSG_RESULT([no])
+				)
 			fi
 		fi
 
@@ -555,8 +575,10 @@ fi
 
 AC_ARG_ENABLE(
 	[use-iovec],
-	AS_HELP_STRING([--disable-use-iovec],[Disable vectored I/O (30-50% performance decrease) (default: enabled)
-		]),
+	AC_HELP_STRING(
+		[--disable-use-iovec],
+		[Disable vectored I/O (30-50% performance decrease) (default: enabled)]
+		),
 	[ac_cv_use_iovec=$enableval],
 	[ac_cv_use_iovec="yes"]
 	)
@@ -586,15 +608,19 @@ if test "${ac_cv_m64_available+set}" = set; then
 else
 	my_save_cflags="$CFLAGS"
 	CFLAGS=-m64
-	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+	AC_TRY_COMPILE(
+		[
 #include <stdio.h>
-		
-]], [[
+		]
+,
+		[
 	return(0);
-		
-]])],[ac_cv_m64_available=yes
-],[ac_cv_m64_available=no
-	])
+		]
+,
+		ac_cv_m64_available=yes
+,
+		ac_cv_m64_available=no
+	)
 	CFLAGS="$my_save_cflags"
 	AC_MSG_RESULT($ac_cv_m64_available)
 fi
@@ -604,8 +630,10 @@ dnl Check to see if we should use -m64
 dnl
 AC_ARG_ENABLE(
 	[use-m64],
-	AS_HELP_STRING([--disable-use-m64],[Disable the use of -m64 compiler flag (default: enabled)
-		]),
+	AC_HELP_STRING(
+		[--disable-use-m64],
+		[Disable the use of -m64 compiler flag (default: enabled)]
+		),
 	[ac_cv_use_m64=$enableval],
 	[ac_cv_use_m64="yes"]
 	)
@@ -630,10 +658,12 @@ AC_MSG_CHECKING([if system supports counting to 1 exabyte])
 if test "${ac_cv_c_exabyte_support+set}" = set; then
 	AC_MSG_RESULT([(cached)] $ac_cv_c_exabyte_support)
 else
-	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+	AC_TRY_COMPILE(
+		[
 #include <assert.h>
-		
-]], [[
+		]
+,
+		[
 	unsigned long long n = 1;
 
 	n *= 1000; /* 1K */
@@ -649,11 +679,13 @@ else
 	n /= 1000;
 	n /= 1000;
 	assert(n == 1);
-		
-]])],[ac_cv_c_exabyte_support=yes
-		AC_DEFINE(HAVE_EXABYTE_SUPPORT,1,Define if we can count to 1E)
-],[ac_cv_c_exabyte_support=no
-	])
+		]
+,
+		[ac_cv_c_exabyte_support=yes]
+		AC_DEFINE(HAVE_EXABYTE_SUPPORT,1,[Define if we can count to 1E])
+,
+		[ac_cv_c_exabyte_support=no]
+	)
 	AC_MSG_RESULT($ac_cv_c_exabyte_support)
 fi
 
@@ -666,10 +698,12 @@ AC_MSG_CHECKING([if system supports counting to 1 petabyte])
 if test "${ac_cv_c_petabyte_support+set}" = set; then
 	AC_MSG_RESULT([(cached)] $ac_cv_c_petabyte_support)
 else
-	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+	AC_TRY_COMPILE(
+		[
 #include <assert.h>
-		
-]], [[
+		]
+,
+		[
 	unsigned long long n = 1;
 
 	n *= 1000; /* 1K */
@@ -683,11 +717,13 @@ else
 	n /= 1000;
 	n /= 1000;
 	assert(n == 1);
-		
-]])],[ac_cv_c_petabyte_support=yes
-		AC_DEFINE(HAVE_PETABYTE_SUPPORT,1,Define if we can count to 1P)
-],[ac_cv_c_petabyte_support=no
-	])
+		]
+,
+		[ac_cv_c_petabyte_support=yes]
+		AC_DEFINE(HAVE_PETABYTE_SUPPORT,1,[Define if we can count to 1P])
+,
+		[ac_cv_c_petabyte_support=no]
+	)
 	AC_MSG_RESULT($ac_cv_c_petabyte_support)
 fi
 
@@ -700,10 +736,12 @@ AC_MSG_CHECKING([if system supports counting to 1 terabyte])
 if test "${ac_cv_c_terabyte_support+set}" = set; then
 	AC_MSG_RESULT([(cached)] $ac_cv_c_terabyte_support)
 else
-	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+	AC_TRY_COMPILE(
+		[
 #include <assert.h>
-		
-]], [[
+		]
+,
+		[
 	unsigned long long n = 1;
 
 	n *= 1000; /* 1K */
@@ -715,11 +753,13 @@ else
 	n /= 1000;
 	n /= 1000;
 	assert(n == 1);
-		
-]])],[ac_cv_c_terabyte_support=yes
-		AC_DEFINE(HAVE_TERABYTE_SUPPORT,1,Define if we can count to 1T)
-],[ac_cv_c_terabyte_support=no
-	])
+		]
+,
+		[ac_cv_c_terabyte_support=yes]
+		AC_DEFINE(HAVE_TERABYTE_SUPPORT,1,[Define if we can count to 1T])
+,
+		[ac_cv_c_terabyte_support=no]
+	)
 	AC_MSG_RESULT($ac_cv_c_terabyte_support)
 fi
 
